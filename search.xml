@@ -2,35 +2,76 @@
 <search>
   <entry>
     <title>gc-c</title>
-    <url>/2023/05/13/gc-c/</url>
-    <content><![CDATA[]]></content>
+    <url>/2023/05/15/gc-c/</url>
+    <content><![CDATA[<h4 id="垃圾回收简易版-（C）"><a href="#垃圾回收简易版-（C）" class="headerlink" title="垃圾回收简易版 （C）"></a>垃圾回收简易版 （C）</h4><h5 id="运行过程"><a href="#运行过程" class="headerlink" title="运行过程"></a>运行过程</h5><ul>
+<li>由 VM 负责创建对象，并将对象压入维护对象指针的栈中；用不到的对象（需要被回收）出栈；</li>
+<li>VM 维护列表头，用以记录经由 VM 创建的所有对象（包括已经栈中存放的）；</li>
+<li>触发 gc 时候，通过遍历列表，标记存放在栈中的对象（不回收），然后调用 sweep 执行回收内存的操作！</li>
+</ul>
+<h5 id="相关对象"><a href="#相关对象" class="headerlink" title="相关对象"></a>相关对象</h5><p>对象类型：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">enum</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  OBJ_INT,</span><br><span class="line">  OBJ_PAIR</span><br><span class="line">&#125; ObjectType;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">sObject</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  ObjectType type;		<span class="comment">// 对象类型</span></span><br><span class="line">  <span class="type">unsigned</span> <span class="type">char</span> marked;	<span class="comment">// 记录是否需要被回收</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">sObject</span> *<span class="title">next</span>;</span> <span class="comment">// 堆上下一个对象</span></span><br><span class="line">  <span class="class"><span class="keyword">union</span></span></span><br><span class="line"><span class="class">  &#123;</span></span><br><span class="line">    <span class="type">int</span> value;					<span class="comment">// INT 对象</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span>						// <span class="title">PAIR</span> 对象</span></span><br><span class="line"><span class="class">    &#123;</span>	</span><br><span class="line">      <span class="class"><span class="keyword">struct</span> <span class="title">sObject</span> *<span class="title">first</span>;</span></span><br><span class="line">      <span class="class"><span class="keyword">struct</span> <span class="title">sObject</span> *<span class="title">second</span>;</span></span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125; Object;</span><br></pre></td></tr></table></figure>
+
+<p>虚拟机：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> STACK_MAX 256      <span class="comment">/* 栈容量 */</span></span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">  Object *<span class="built_in">stack</span>[STACK_MAX]; <span class="comment">// 存放不需要回收的对象指针</span></span><br><span class="line">  <span class="type">int</span> stackSize;			<span class="comment">// 栈中元素数量</span></span><br><span class="line"></span><br><span class="line">  Object *firstObject;		<span class="comment">// 堆中对象的头指针</span></span><br><span class="line"></span><br><span class="line">  <span class="type">int</span> numObjects;			<span class="comment">// 堆中对象的数量</span></span><br><span class="line">  <span class="type">int</span> maxObjects;			<span class="comment">// 触发gc 的阈值</span></span><br><span class="line">&#125; VM;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意区分 stackSize 和 numObjects </p>
+</blockquote>
+<h5 id="重要函数"><a href="#重要函数" class="headerlink" title="重要函数"></a>重要函数</h5><figure class="highlight c"><table><tr><td class="code"><pre><span class="line">VM *<span class="title function_">newVM</span><span class="params">()</span>;                                <span class="comment">// 创建虚拟机</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">freeVM</span><span class="params">(VM *vm)</span>;                        <span class="comment">// 释放虚拟机</span></span><br><span class="line">Object *<span class="title function_">newObject</span><span class="params">(VM *vm, ObjectType type)</span>; <span class="comment">// 经由虚拟机创建对象</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">push</span><span class="params">(VM *vm, Object *value)</span>;           <span class="comment">// 对象放入栈中</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">pushInt</span><span class="params">(VM *vm, <span class="type">int</span> intValue)</span>;         <span class="comment">// 创建 Int 类型对象并入栈</span></span><br><span class="line">Object *<span class="title function_">pushPair</span><span class="params">(VM *vm)</span>;                   <span class="comment">// 创建 Pair 类型对象并入栈</span></span><br><span class="line">Object *<span class="title function_">pop</span><span class="params">(VM *vm)</span>;                        <span class="comment">// 对象出栈</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">mark</span><span class="params">(Object *object)</span>;                  <span class="comment">// 标记对象-不回收</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">gc</span><span class="params">(VM *vm)</span>;                            <span class="comment">// 触发垃圾回收</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">markAll</span><span class="params">(VM *vm)</span>;                       <span class="comment">// 标记所有在栈中的对象</span></span><br><span class="line"><span class="type">void</span> <span class="title function_">sweep</span><span class="params">(VM *vm)</span>;                         <span class="comment">// 回收所有未标记的对象</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="创建虚拟机"><a href="#创建虚拟机" class="headerlink" title="创建虚拟机"></a>创建虚拟机</h5><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> INIT_OBJ_NUM_MAX 8 <span class="comment">/* 触发GC 回收 */</span></span></span><br><span class="line"></span><br><span class="line">VM *<span class="title function_">newVM</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  VM *vm = <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(VM));</span><br><span class="line">  vm-&gt;stackSize = <span class="number">0</span>;</span><br><span class="line">  vm-&gt;firstObject = <span class="literal">NULL</span>;</span><br><span class="line">  vm-&gt;numObjects = <span class="number">0</span>;</span><br><span class="line">  vm-&gt;maxObjects = INIT_OBJ_NUM_MAX;</span><br><span class="line">  <span class="keyword">return</span> vm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="创建对象"><a href="#创建对象" class="headerlink" title="创建对象"></a>创建对象</h5><p>vm 创建对象：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">Object *<span class="title function_">newObject</span><span class="params">(VM *vm, ObjectType type)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (vm-&gt;numObjects == vm-&gt;maxObjects)</span><br><span class="line">  &#123;</span><br><span class="line">    gc(vm);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Object *object = <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Object));</span><br><span class="line">  object-&gt;type = type;</span><br><span class="line">  object-&gt;next = vm-&gt;firstObject;</span><br><span class="line">  object-&gt;marked = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  vm-&gt;firstObject = object;</span><br><span class="line">  vm-&gt;numObjects++;</span><br><span class="line">  <span class="keyword">return</span> object;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>INT：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">pushInt</span><span class="params">(VM *vm, <span class="type">int</span> intValue)</span></span><br><span class="line">&#123;</span><br><span class="line">  Object *object = newObject(vm, OBJ_INT);</span><br><span class="line">  object-&gt;value = intValue;</span><br><span class="line">  push(vm, object);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>PAIR：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">Object *<span class="title function_">pushPair</span><span class="params">(VM *vm)</span></span><br><span class="line">&#123;</span><br><span class="line">  Object *object = newObject(vm, OBJ_PAIR);</span><br><span class="line">  object-&gt;second = pop(vm);</span><br><span class="line">  object-&gt;first = pop(vm);</span><br><span class="line"></span><br><span class="line">  push(vm, object);</span><br><span class="line">  <span class="keyword">return</span> object;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="对象入栈出栈"><a href="#对象入栈出栈" class="headerlink" title="对象入栈出栈"></a>对象入栈出栈</h5><p>入栈：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">push</span><span class="params">(VM *vm, Object *value)</span></span><br><span class="line">&#123;</span><br><span class="line">  assert(vm-&gt;stackSize &lt; STACK_MAX, <span class="string">&quot;Stack overflow!&quot;</span>);</span><br><span class="line">  vm-&gt;<span class="built_in">stack</span>[vm-&gt;stackSize++] = value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>出栈：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line">Object *<span class="title function_">pop</span><span class="params">(VM *vm)</span></span><br><span class="line">&#123;</span><br><span class="line">  assert(vm-&gt;stackSize &gt; <span class="number">0</span>, <span class="string">&quot;Stack underflow!&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> vm-&gt;<span class="built_in">stack</span>[--vm-&gt;stackSize];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="回收"><a href="#回收" class="headerlink" title="回收"></a>回收</h5><p>mark：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">mark</span><span class="params">(Object *object)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (object-&gt;marked)</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">  object-&gt;marked = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (object-&gt;type == OBJ_PAIR)</span><br><span class="line">  &#123;</span><br><span class="line">    mark(object-&gt;first);</span><br><span class="line">    mark(object-&gt;second);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于Pair类型的对象，既可以引用 Int 类型的对象，也可以递归引用 Pair 类型的对象！</p>
+<p>因此标记对象的时候，既要递归的标记，又要防止无限制遍历！</p>
+<p>markAll：标记栈中所有对象不回收</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">markAll</span><span class="params">(VM *vm)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; vm-&gt;stackSize; i++)</span><br><span class="line">  &#123;</span><br><span class="line">    mark(vm-&gt;<span class="built_in">stack</span>[i]);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>gc：垃圾回收主要调用者</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">gc</span><span class="params">(VM *vm)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> numObjects = vm-&gt;numObjects;</span><br><span class="line"></span><br><span class="line">  markAll(vm);</span><br><span class="line">  sweep(vm);</span><br><span class="line"></span><br><span class="line">  vm-&gt;maxObjects = vm-&gt;numObjects == <span class="number">0</span> ? INIT_OBJ_NUM_MAX : vm-&gt;numObjects * <span class="number">2</span>;</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;Collected %d objects, %d remaining.\n&quot;</span>, numObjects - vm-&gt;numObjects, vm-&gt;numObjects);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="释放虚拟机"><a href="#释放虚拟机" class="headerlink" title="释放虚拟机"></a>释放虚拟机</h5><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">freeVM</span><span class="params">(VM *vm)</span></span><br><span class="line">&#123;</span><br><span class="line">  vm-&gt;stackSize = <span class="number">0</span>;</span><br><span class="line">  gc(vm);</span><br><span class="line">  <span class="built_in">free</span>(vm);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时将栈元素个数设置为0，这样当gc的时候，markAll 不会再将栈内的对象标记为不可回收了；</p>
+<p>因此等下一步 sweep 时候，会将链表上所有的对象回收！</p>
+<h5 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h5><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">test_pair1</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  VM *vm = newVM();				<span class="comment">// 创建虚拟机</span></span><br><span class="line">  pushInt(vm, <span class="number">1</span>);				<span class="comment">// 创建 INT 对象并入栈</span></span><br><span class="line">  pushInt(vm, <span class="number">2</span>);				<span class="comment">// 创建 INT 对象并入栈</span></span><br><span class="line">  Object *a = pushPair(vm);		<span class="comment">// 利用栈顶两个INT对象创建 Pair 对象并入栈 （此时栈内只有 a 对象，但是堆上有 3 个对象）</span></span><br><span class="line"></span><br><span class="line">  pushInt(vm, <span class="number">3</span>);</span><br><span class="line">  pushInt(vm, <span class="number">4</span>);</span><br><span class="line">  Object *b = pushPair(vm);		<span class="comment">// 同上</span></span><br><span class="line"></span><br><span class="line">  gc(vm);		<span class="comment">// 栈内有两个对象 a, b，堆上有6个对象，但是4个INT对象都被 2 个Pair 对象引用</span></span><br><span class="line">    			<span class="comment">// 因此本次回收 0 个对象</span></span><br><span class="line"></span><br><span class="line">  freeVM(vm);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h5><p>完整代码：</p>
+<p>参考链接：<a href="http://journal.stuffwithstuff.com/2013/12/08/babys-first-garbage-collector/">http://journal.stuffwithstuff.com/2013/12/08/babys-first-garbage-collector/</a></p>
+]]></content>
       <tags>
-        <tag>c</tag>
         <tag>gc</tag>
+        <tag>c</tag>
+        <tag>标记清除</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2023/05/13/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-  </entry>
-  <entry>
-    <title>hello</title>
-    <url>/2023/05/13/hello/</url>
-    <content><![CDATA[<h4 id="垃圾回收器-C"><a href="#垃圾回收器-C" class="headerlink" title="垃圾回收器 - C"></a>垃圾回收器 - C</h4><p>标记回收法</p>
-]]></content>
   </entry>
 </search>
