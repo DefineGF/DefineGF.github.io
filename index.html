@@ -77,13 +77,13 @@
 
 <meta name="description" content="山雨欲来风满楼">
 <meta property="og:type" content="website">
-<meta property="og:title" content="about">
-<meta property="og:url" content="http://example.com/about/index.html">
+<meta property="og:title" content="categories">
+<meta property="og:url" content="http://example.com/categories/index.html">
 <meta property="og:site_name" content="DefineGF">
 <meta property="og:description" content="山雨欲来风满楼">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-05-14T03:21:57.000Z">
-<meta property="article:modified_time" content="2023-05-14T03:23:19.221Z">
+<meta property="article:published_time" content="2023-05-14T03:22:15.000Z">
+<meta property="article:modified_time" content="2023-05-14T03:23:09.350Z">
 <meta property="article:author" content="cheng">
 <meta name="twitter:card" content="summary">
 
@@ -113,7 +113,7 @@
 
 
 
-  <link rel="canonical" href="http://example.com/about/"/>
+  <link rel="canonical" href="http://example.com/categories/"/>
 
 
 
@@ -256,6 +256,207 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/05/18/brk-sbrk/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="DefineGF">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2023/05/18/brk-sbrk/" itemprop="url">brk-sbrk</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2023-05-18T11:45:36+08:00">2023-05-18</time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/c/" itemprop="url" rel="index">
+                    <span itemprop="name">c</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h5 id="进程内存布局"><a href="#进程内存布局" class="headerlink" title="进程内存布局"></a>进程内存布局</h5><p><img src="/./images/brk-sbrk-images/9f7501cc9c31df975026e423321f75a3.png" alt="img"></p>
+<h4 id="brk-和-sbrk"><a href="#brk-和-sbrk" class="headerlink" title="brk 和 sbrk"></a>brk 和 sbrk</h4><h5 id="函数原型"><a href="#函数原型" class="headerlink" title="函数原型"></a>函数原型</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="type">int</span> <span class="title function_">brk</span><span class="params">(<span class="type">void</span> * addr)</span>; </span><br><span class="line"><span class="type">void</span> * <span class="title function_">sbrk</span><span class="params">(<span class="type">intptr_t</span> increment)</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="brk"><a href="#brk" class="headerlink" title="brk"></a>brk</h5><p>程序中断点（program break）初始化值是未初始化的数据段的结束位置；</p>
+<p>当brk参数中 addr 值合理并未超过最大允许范围时，将 program break 值设为 addr；</p>
+<p>返回值：</p>
+<ul>
+<li>0：成功！</li>
+<li>-1：失败，并设置 error 值为 ENOMEM；</li>
+</ul>
+<h5 id="sbrk"><a href="#sbrk" class="headerlink" title="sbrk"></a>sbrk</h5><p>通过函数参数 increment 设置程序中断点的移动范围，当 increment值：</p>
+<ul>
+<li>正：中断点向后移动，返回值为移动前位置；</li>
+<li>0：返回当前中断点位置；</li>
+<li>负：向前移动中断点，相当于释放内存，返回值无意义！</li>
+</ul>
+<h5 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h5><p>一般使用 sbrk 分配内存，使用brk释放内存。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;malloc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> SIZE 16</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">void</span>* old = sbrk(SIZE);</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; SIZE; ++i) &#123;</span><br><span class="line">        *((<span class="type">char</span>*)old) = <span class="string">&#x27;c&#x27;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> ans = brk(old);</span><br><span class="line">    <span class="keyword">if</span> (ans == <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;release error!\n&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (ans == <span class="number">0</span>) </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;release successful!\n&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h4 id="调试过程"><a href="#调试过程" class="headerlink" title="调试过程"></a>调试过程</h4><p>获取 exe_name 对应的进程 id：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -e | grep &#x27;exe_name&#x27; | awk &#x27;&#123;print $1&#125;&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>通过id 获得内存布局信息：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /proc/pid/maps</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="代码1"><a href="#代码1" class="headerlink" title="代码1"></a>代码1</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;malloc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span>* addr;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    addr = sbrk(<span class="number">0</span>);</span><br><span class="line">    addr = sbrk(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>针对 9、10 行断点调试，addr 值均为 <code>0x555555602000</code>；(看着像是废话)</p>
+<h5 id="代码2"><a href="#代码2" class="headerlink" title="代码2"></a>代码2</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;malloc.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span>* addr;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    addr = sbrk(<span class="number">0</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;pid: %d\n&quot;</span>, );</span><br><span class="line">    addr = sbrk(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>断点调试9、10、11行：</p>
+<p>第9行执行完毕时，addr 值为：0x555555602000，此时查看进程内存布局：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">555555400000-555555401000 r-xp 00000000 08:10 50993                      /home/cheng/Learning/sbrk_test</span><br><span class="line">555555600000-555555601000 r--p 00000000 08:10 50993                      /home/cheng/Learning/sbrk_test</span><br><span class="line">555555601000-555555602000 rw-p 00001000 08:10 50993                      /home/cheng/Learning/sbrk_test</span><br><span class="line">7ffff79e2000-7ffff7bc9000 r-xp 00000000 08:10 2444                       /lib/x86_64-linux-gnu/libc-2.27.so</span><br><span class="line">7ffff7bc9000-7ffff7dc9000 ---p 001e7000 08:10 2444                       /lib/x86_64-linux-gnu/libc-2.27.so</span><br><span class="line">7ffff7dc9000-7ffff7dcd000 r--p 001e7000 08:10 2444                       /lib/x86_64-linux-gnu/libc-2.27.so</span><br><span class="line">7ffff7dcd000-7ffff7dcf000 rw-p 001eb000 08:10 2444                       /lib/x86_64-linux-gnu/libc-2.27.so</span><br><span class="line">7ffff7dcf000-7ffff7dd3000 rw-p 00000000 00:00 0 </span><br><span class="line">7ffff7dd3000-7ffff7dfc000 r-xp 00000000 08:10 2420                       /lib/x86_64-linux-gnu/ld-2.27.so</span><br><span class="line">7ffff7fed000-7ffff7fef000 rw-p 00000000 00:00 0 </span><br><span class="line">7ffff7ff7000-7ffff7ffb000 r--p 00000000 00:00 0                          [vvar]</span><br><span class="line">7ffff7ffb000-7ffff7ffc000 r-xp 00000000 00:00 0                          [vdso]</span><br><span class="line">7ffff7ffc000-7ffff7ffd000 r--p 00029000 08:10 2420                       /lib/x86_64-linux-gnu/ld-2.27.so</span><br><span class="line">7ffff7ffd000-7ffff7ffe000 rw-p 0002a000 08:10 2420                       /lib/x86_64-linux-gnu/ld-2.27.so</span><br><span class="line">7ffff7ffe000-7ffff7fff000 rw-p 00000000 00:00 0 </span><br><span class="line">7ffffffde000-7ffffffff000 rw-p 00000000 00:00 0                          [stack]</span><br></pre></td></tr></table></figure>
+
+
+
+<p>继续执行第10行，内存布局如下, 多出一条 [heap] 的记录：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">555555400000-555555401000 r-xp 00000000 08:10 50993                      /home/cheng/Learning/sbrk_test</span><br><span class="line">555555600000-555555601000 r--p 00000000 08:10 50993                      /home/cheng/Learning/sbrk_test</span><br><span class="line">555555601000-555555602000 rw-p 00001000 08:10 50993                      /home/cheng/Learning/sbrk_test</span><br><span class="line"></span><br><span class="line">555555602000-555555623000 rw-p 00000000 00:00 0                          [heap]</span><br><span class="line"></span><br><span class="line">7ffff79e2000-7ffff7bc9000 r-xp 00000000 08:10 2444                       /lib/x86_64-linux-gnu/libc-2.27.so</span><br><span class="line">7ffff7bc9000-7ffff7dc9000 ---p 001e7000 08:10 2444                       /lib/x86_64-linux-gnu/libc-2.27.so</span><br><span class="line">7ffff7dc9000-7ffff7dcd000 r--p 001e7000 08:10 2444                       /lib/x86_64-linux-gnu/libc-2.27.so</span><br><span class="line">7ffff7dcd000-7ffff7dcf000 rw-p 001eb000 08:10 2444                       /lib/x86_64-linux-gnu/libc-2.27.so</span><br><span class="line">7ffff7dcf000-7ffff7dd3000 rw-p 00000000 00:00 0 </span><br><span class="line">7ffff7dd3000-7ffff7dfc000 r-xp 00000000 08:10 2420                       /lib/x86_64-linux-gnu/ld-2.27.so</span><br><span class="line">7ffff7fed000-7ffff7fef000 rw-p 00000000 00:00 0 </span><br><span class="line">7ffff7ff7000-7ffff7ffb000 r--p 00000000 00:00 0                          [vvar]</span><br><span class="line">7ffff7ffb000-7ffff7ffc000 r-xp 00000000 00:00 0                          [vdso]</span><br><span class="line">7ffff7ffc000-7ffff7ffd000 r--p 00029000 08:10 2420                       /lib/x86_64-linux-gnu/ld-2.27.so</span><br><span class="line">7ffff7ffd000-7ffff7ffe000 rw-p 0002a000 08:10 2420                       /lib/x86_64-linux-gnu/ld-2.27.so</span><br><span class="line">7ffff7ffe000-7ffff7fff000 rw-p 00000000 00:00 0 </span><br><span class="line">7ffffffde000-7ffffffff000 rw-p 00000000 00:00 0                          [stack]</span><br></pre></td></tr></table></figure>
+
+
+
+<p>执行第11行之后，会发现 addr 的值变为：<strong>0x555555623000</strong>， 即内存布局中heap的最后地址！</p>
+<p>因此我们发现，在两个sbrk之间调用 printf，会更改 program break 的值。于是我们将 第10 行的printf 分别替换成一下代码：</p>
+<ol>
+<li><pre><code class="c">int num = 11;
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">2. ```c</span><br><span class="line">   int *num = (int*)malloc(sizeof(int)); </span><br><span class="line">   *num = 11;</span><br></pre></td></tr></table></figure>
+</code></pre>
+</li>
+</ol>
+<p>结论：</p>
+<p><strong>代码1</strong> 并不会更改 program break 的值， 同时内存布局中也不会出现heap的条目，原因可能是 num 作为局部变量，并不会在heap中保存；</p>
+<p><strong>代码2</strong> 会更改 program break的值（类似printf），同时内存布局中也会出现 heap的条目，原因是 num 作为指针指向 malloc 在heap 分配的内存！有意思的是，通过debug 发现 num 指向的heap 地址并不是 heap 起始地址 555555602000， 而是 0x555555602260！</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -483,12 +684,21 @@
                 
                   <a href="/archives/%20%7C%7C%20archive">
                 
-                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-count">2</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
               
 
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    <span class="site-state-item-count">1</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
               
 
               
@@ -496,7 +706,7 @@
                 
                 <div class="site-state-item site-state-tags">
                   <a href="/tags/index.html">
-                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-count">4</span>
                     <span class="site-state-item-name">tags</span>
                   </a>
                 </div>
