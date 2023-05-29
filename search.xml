@@ -266,4 +266,125 @@
         <tag>社科</tag>
       </tags>
   </entry>
+  <entry>
+    <title>cmake-skill</title>
+    <url>/2023/05/29/cmake-skill/</url>
+    <content><![CDATA[<h5 id="实例1-一个main-c-文件"><a href="#实例1-一个main-c-文件" class="headerlink" title="实例1 - 一个main.c 文件"></a>实例1 - 一个main.c 文件</h5><ul>
+<li>main.c</li>
+<li>CMakeLists.txt</li>
+</ul>
+<p>CMakeLists.txt：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.1</span>)</span><br><span class="line"><span class="keyword">project</span>(demo)</span><br><span class="line"><span class="keyword">add_executable</span>(main main.c)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>先后在 CMakeLists.txt 所在文件目录 执行命令：</p>
+<ol>
+<li>cmake .</li>
+<li>make</li>
+</ol>
+<p>生成文件如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">├── CMakeCache.txt</span><br><span class="line">├── CMakeFiles</span><br><span class="line">│   ├── 3.10.2</span><br><span class="line">│   │   ├── CMakeCCompiler.cmake</span><br><span class="line">│   │   ├── CMakeCXXCompiler.cmake</span><br><span class="line">│   │   ├── CMakeDetermineCompilerABI_C.bin</span><br><span class="line">│   │   ├── CMakeDetermineCompilerABI_CXX.bin</span><br><span class="line">│   │   ├── CMakeSystem.cmake</span><br><span class="line">│   │   ├── CompilerIdC</span><br><span class="line">│   │   │   ├── CMakeCCompilerId.c</span><br><span class="line">│   │   │   ├── a.out</span><br><span class="line">│   │   │   └── tmp</span><br><span class="line">│   │   └── CompilerIdCXX</span><br><span class="line">│   │       ├── CMakeCXXCompilerId.cpp</span><br><span class="line">│   │       ├── a.out</span><br><span class="line">│   │       └── tmp</span><br><span class="line">│   ├── CMakeDirectoryInformation.cmake</span><br><span class="line">│   ├── CMakeOutput.log</span><br><span class="line">│   ├── CMakeTmp</span><br><span class="line">│   ├── Makefile.cmake</span><br><span class="line">│   ├── Makefile2</span><br><span class="line">│   ├── TargetDirectories.txt</span><br><span class="line">│   ├── cmake.check_cache</span><br><span class="line">│   ├── feature_tests.bin</span><br><span class="line">│   ├── feature_tests.c</span><br><span class="line">│   ├── feature_tests.cxx</span><br><span class="line">│   ├── main.dir</span><br><span class="line">│   │   ├── C.includecache</span><br><span class="line">│   │   ├── DependInfo.cmake</span><br><span class="line">│   │   ├── build.make</span><br><span class="line">│   │   ├── cmake_clean.cmake</span><br><span class="line">│   │   ├── depend.internal</span><br><span class="line">│   │   ├── depend.make</span><br><span class="line">│   │   ├── flags.make</span><br><span class="line">│   │   ├── link.txt</span><br><span class="line">│   │   ├── main.c.o</span><br><span class="line">│   │   └── progress.make</span><br><span class="line">│   └── progress.marks</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── Makefile</span><br><span class="line">├── cmake_install.cmake</span><br><span class="line">├── main</span><br><span class="line">└── main.c</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="实例2-多个-c-文件"><a href="#实例2-多个-c-文件" class="headerlink" title="实例2 - 多个 .c 文件"></a>实例2 - 多个 .c 文件</h4><ul>
+<li>func.h</li>
+<li>func.c</li>
+<li>main.c &#x2F;&#x2F; include “func.h”</li>
+</ul>
+<p>CMakeLists.txt:</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(demo)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(main main.c func.c)</span><br></pre></td></tr></table></figure>
+
+<p>同样步骤：</p>
+<ol>
+<li>cmake . </li>
+<li>make</li>
+</ol>
+<p>如果当前目录下有多个 c 文件，避免重复写多个 .c 文件：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(demo)</span><br><span class="line"></span><br><span class="line"><span class="keyword">aux_source_directory</span>(. SRC_LIST)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(main <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br></pre></td></tr></table></figure>
+
+<h5 id="aux-source-directory-dir-var-："><a href="#aux-source-directory-dir-var-：" class="headerlink" title="**aux_source_directory(dir var)**："></a>**aux_source_directory(dir var)**：</h5><p>将 dir 指定目录下的源文件，存放到 SRC_LIST 变量中！</p>
+<p>弊端：<br>aux_source_directory 会将目录下所有源文件添加进来，可使用以下方式避免：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">set</span> (SRC_LIST</span><br><span class="line">	./main.c</span><br><span class="line">	./func1.c</span><br><span class="line">	./func2.c)</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="多个目录"><a href="#多个目录" class="headerlink" title="多个目录"></a>多个目录</h5><p>同样的，如果有多个源文件目录，多添加几个变量即可：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(demo)</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_directories</span>(add sub)</span><br><span class="line"><span class="keyword">aux_source_directory</span>(add ADD_DIR)</span><br><span class="line"><span class="keyword">aux_source_directory</span>(sub SUB_DIR)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(main  main.c <span class="variable">$&#123;ADD_DIR&#125;</span> <span class="variable">$&#123;SUB_DIR&#125;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>include_directories：添加头文件所在路径；</p>
+<h5 id="改进"><a href="#改进" class="headerlink" title="改进"></a>改进</h5><p>文件目录格式如下：</p>
+<p>├── CMakeLists.txt<br>├── bin<br>├── build<br>├── include<br>│   ├── add.h<br>│   └── sub.h<br>└── src<br>    ├── CMakeLists.txt<br>    ├── add.c<br>    ├── main.c<br>    └── sub.c</p>
+<p>主目录下CMake 文件：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">project</span>(demo)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_subdirectory</span>(src)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>add_subdirectory： 添加源文件的目录</li>
+</ul>
+<p>源文件中的CMake 文件：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">include_directories</span>(../<span class="keyword">include</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">aux_source_directory</span>(. SRC_LIST)</span><br><span class="line"><span class="keyword">add_executable</span>(main <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>(EXECUTABLE_OUTPUT_PATH <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/bin)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>当然也可以把两个文件合并成一个：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.1</span>)</span><br><span class="line"><span class="keyword">project</span>(demo)</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_directories</span>(<span class="keyword">include</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">aux_source_directory</span>(src SRC_LIST)</span><br><span class="line"><span class="keyword">add_executable</span>(main <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>(EXECUTABLE_OUTPUT_PATH <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/bin)</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>编译细节：</p>
+<ul>
+<li>进入 build 目录</li>
+<li>cmake ..</li>
+</ul>
+<p>这样生成的 cmake 中间文件都会存在build 中，不会污染源文件；</p>
+<h4 id="动态-、-静态链接库"><a href="#动态-、-静态链接库" class="headerlink" title="动态 、 静态链接库"></a>动态 、 静态链接库</h4><h5 id="生成动态-静态链接库"><a href="#生成动态-静态链接库" class="headerlink" title="生成动态|静态链接库"></a>生成动态|静态链接库</h5><p>├── CMakeLists.txt<br>├── build<br>├── lib<br>└── lib_src<br>    ├── add.c<br>    └── add.h</p>
+<p>CMakeLists 文件内容</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.1</span>)</span><br><span class="line"><span class="keyword">project</span>(demo)</span><br><span class="line"></span><br><span class="line"><span class="keyword">aux_source_directory</span>(lib_src SRC_LIST)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_library</span>(add_shared SHARED <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br><span class="line"><span class="keyword">add_library</span>(add_static STATIC <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">set_target_properties</span>(add_shared PROPERTIES OUTPUT_NAME <span class="string">&quot;add&quot;</span>)</span><br><span class="line"><span class="keyword">set_target_properties</span>(add_static PROPERTIES OUTPUT_NAME <span class="string">&quot;add&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>(LIBRARY_OUTPUT_PATH <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/lib)</span><br></pre></td></tr></table></figure>
+
+<p>build之后，在lib文件夹下生成文件：</p>
+<ul>
+<li>libadd.a</li>
+<li>libadd.so</li>
+</ul>
+<h5 id="链接库"><a href="#链接库" class="headerlink" title="链接库"></a>链接库</h5><p>src&#x2F;main.c 使用刚刚编译成功的静态、动态链接库；</p>
+<p>主目录下 CMakeLists.txt：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.1</span>)</span><br><span class="line"><span class="keyword">project</span>(add_demo)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_subdirectory</span>(src)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>src 目录下：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">aux_source_directory</span>(. SRC_LIST)</span><br><span class="line"></span><br><span class="line"><span class="keyword">include_directories</span>(../../test5/lib_src) <span class="comment"># 头文件</span></span><br><span class="line"><span class="keyword">link_directories</span>(../../test5/lib)		 <span class="comment"># 非标准的共享库搜索路径</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(main <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br><span class="line"><span class="comment"># target_link_libraries(main add) # 默认使用动态链接库，可以指定静态链接库：libadd.a</span></span><br><span class="line"><span class="keyword">target_link_libraries</span>(main libadd.a)	 <span class="comment"># 将目标与共享库进行链接</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">set</span>(EXECUTABLE_OUTPUT_PATH <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/bin)</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><h5 id="添加编译选项"><a href="#添加编译选项" class="headerlink" title="添加编译选项"></a>添加编译选项</h5><p>add_compile_options(-std&#x3D;c++11 -Wall)</p>
+<h5 id="添加控制选项"><a href="#添加控制选项" class="headerlink" title="添加控制选项"></a>添加控制选项</h5><p>外层CMake：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">option</span>(MYDEBUG <span class="string">&quot;enable debug compilation&quot;</span> <span class="keyword">OFF</span>) <span class="comment"># 第二个参数用以描述options， 第三个参数：默认OFF</span></span><br></pre></td></tr></table></figure>
+
+<p>src目录下：</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span> (MYDEBUG)</span><br><span class="line">    <span class="keyword">add_executable</span>(main2 main2.c)</span><br><span class="line"><span class="keyword">else</span>()</span><br><span class="line">    <span class="keyword">message</span>(STATUS <span class="string">&quot;Currently is not in debug mode&quot;</span>)    </span><br><span class="line"><span class="keyword">endif</span>()</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">add_executable</span>(main main.c) <span class="comment"># 指定可执行文件的名字 和 源文件</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">aux_source_directory</span>(. SRC_LIST) <span class="comment"># 将当前文件夹内的所有 源文件 存放到 SRC_LIST 变量中</span></span><br><span class="line"><span class="keyword">add_executable</span>(main <span class="variable">$&#123;SRC_LIST&#125;</span>) <span class="comment"># 选择变量内容作为可执行文件的输入</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># aux_source_directory 会将所有源文件添加进去</span></span><br><span class="line"><span class="keyword">set</span>(SRC_LIST ./main.c ./func1.c ./func2.c) <span class="comment"># 选择指定的源文件</span></span><br><span class="line"><span class="keyword">add_executable</span>(main , <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_subdirectory</span> (src) <span class="comment"># 一般 src 目录下还会有 CMakeLists.txt 文件</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">include_directories</span> (../<span class="keyword">include</span>) 						<span class="comment"># 指定 头文件 目录</span></span><br><span class="line"><span class="keyword">set</span> (EXECUTABLE_OUTPUT_PATH <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/bin)  <span class="comment"># 设置可执行文件输出路径</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成：静态 | 动态链接库</span></span><br><span class="line"><span class="keyword">add_library</span> (动态链接库变量名 SHARED <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br><span class="line"><span class="keyword">add_library</span> (静态链接库变量名 STATIC <span class="variable">$&#123;SRC_LIST&#125;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set_target_properties</span> (动态链接库变量名 PROPERTIES OUTPUT_NAME <span class="string">&quot;add&quot;</span>) <span class="comment"># 将动态链接库输出文件名设置为:add, 实际上输出 libadd.so</span></span><br><span class="line"><span class="keyword">set_target_properties</span> (静态链接库变量名 PROPERTIES OUTPUT_NAME <span class="string">&quot;add&quot;</span>) <span class="comment"># 实际上输出  libadd.a</span></span><br><span class="line"><span class="keyword">set</span> (LIBRARY_OUTPUT_PATH <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/lib)                <span class="comment"># 设置链接库输出路径</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用：静态、动态 链接库</span></span><br><span class="line"><span class="keyword">include_directories</span>(../../test5/lib_src) <span class="comment"># 共享库头文件路径</span></span><br><span class="line"><span class="keyword">link_directories</span>(../../test5/lib)        <span class="comment"># 共享库文件所在路径</span></span><br><span class="line"><span class="keyword">target_link_libraries</span>(main add)          <span class="comment"># 默认使用动态链接库，可以指定静态链接库：target_link_libraries(main libadd.a)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 编译选项</span></span><br><span class="line"><span class="keyword">add_compile_options</span>(-std=c++<span class="number">11</span> -Wall) </span><br><span class="line"><span class="comment"># 控制选项</span></span><br><span class="line"><span class="keyword">option</span>(MYDEBUG <span class="string">&quot;enable debug compilation&quot;</span> <span class="keyword">OFF</span>)</span><br><span class="line"><span class="keyword">if</span> (MYDEBUG)</span><br><span class="line">    <span class="keyword">add_executable</span>(main2 main2.c)</span><br><span class="line"><span class="keyword">else</span>()</span><br><span class="line">    <span class="keyword">message</span>(STATUS <span class="string">&quot;Currently is not in debug mode&quot;</span>)    </span><br><span class="line"><span class="keyword">endif</span>()</span><br></pre></td></tr></table></figure>
+
+
+
+<p>预定义变量：</p>
+<ul>
+<li>EXECUTABLE_OUTPUT_PATH：可执行文件存放路径；</li>
+<li>PROJECT_SOURCE_DIR：工程根目录；</li>
+</ul>
+]]></content>
+      <categories>
+        <category>cmake</category>
+      </categories>
+      <tags>
+        <tag>cmake</tag>
+        <tag>c/cpp</tag>
+      </tags>
+  </entry>
 </search>
